@@ -1,4 +1,10 @@
+use std::io::{stdout, Write};
 use clap::Parser;
+use crossterm::{
+    style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+    ExecutableCommand, Result,
+    event,
+};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -13,10 +19,16 @@ struct Args {
     count: u8,
 }
 
-fn main() {
+fn main() -> Result<()> {
     let args = Args::parse();
 
     for _ in 0..args.count {
-        println!("Hello {}!", args.name)
+        stdout()
+        .execute(SetForegroundColor(Color::Blue))?
+        .execute(SetBackgroundColor(Color::Red))?
+        .execute(Print(&args.name))?
+        .execute(ResetColor)?;
     }
+    
+    Ok(())
 }
