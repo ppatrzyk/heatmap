@@ -1,26 +1,26 @@
 use std::io::{stdout, Write};
-use clap::Parser;
+use clap::{ArgEnum, Parser};
 use crossterm::{
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
     ExecutableCommand, Result,
     event,
 };
 
-// #[derive(Debug)]
-// enum Mode {
-//     Row,
-//     Col,
-//     Full,
-// }
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
+enum Mode {
+    Row,
+    Col,
+    Full,
+}
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    #[clap(short, long)]
+    #[clap()]
     file: String,
 
-    #[clap(short, long, default_value = "row")]
-    mode: String,
+    #[clap(short, long, arg_enum, default_value = "col")]
+    mode: Mode,
 }
 
 fn main() -> Result<()> {
