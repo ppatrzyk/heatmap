@@ -5,6 +5,7 @@ use crossterm::{
     ExecutableCommand, Result,
     event,
 };
+use polars::prelude::*;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
 enum Mode {
@@ -25,6 +26,15 @@ struct Args {
 
 fn main() -> Result<()> {
     let args = Args::parse();
+
+    let df = LazyCsvReader::new(String::from(&args.file))
+        .has_header(true)
+        .finish();
+
+    match df {
+        Ok(_df) => println!("lazy frame read"),
+        Err(_reason) => println!("error")
+    }
 
     stdout()
     .execute(SetForegroundColor(Color::Blue))?
