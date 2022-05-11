@@ -24,6 +24,10 @@ struct Args {
     mode: Mode,
 }
 
+fn process_file(df: LazyFrame) -> bool {
+    true
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
 
@@ -32,15 +36,19 @@ fn main() -> Result<()> {
         .finish();
 
     match df {
-        Ok(_df) => println!("lazy frame read"),
-        Err(_reason) => println!("error")
+        Err(reason) => {
+            println!("Error reading {}: {}", &args.file, reason);
+            Ok(())
+        }
+        Ok(df) => {
+            println!("file read ok");
+            let _a = process_file(df);
+            stdout()
+            .execute(SetForegroundColor(Color::Blue))?
+            .execute(SetBackgroundColor(Color::Red))?
+            .execute(Print("chuj"))?
+            .execute(ResetColor)?;
+            Ok(())
+        }
     }
-
-    stdout()
-    .execute(SetForegroundColor(Color::Blue))?
-    .execute(SetBackgroundColor(Color::Red))?
-    .execute(Print(&args.file))?
-    .execute(ResetColor)?;
-    
-    Ok(())
 }
