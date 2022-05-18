@@ -24,25 +24,31 @@ struct Args {
     mode: Mode,
 }
 
-fn process_file(df: LazyFrame) -> bool {
-    true
+fn process_file(file: &String) ->  std::result::Result<(LazyFrame, i32), PolarsError> {
+    let df = LazyCsvReader::new(String::from(file))
+    .has_header(true)
+    .finish()?;
+
+    let sample_df = df.clone().fetch(10)?;
+    let dtypes = sample_df.dtypes();
+    let colnames = sample_df.get_column_names();
+
+    println!("{:?}", dtypes);
+    println!("{:?}", colnames);
+
+    Ok((df, 5))
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    let df = LazyCsvReader::new(String::from(&args.file))
-        .has_header(true)
-        .finish();
-
-    match df {
+    match process_file(&args.file) {
         Err(reason) => {
             println!("Error reading {}: {}", &args.file, reason);
             Ok(())
         }
-        Ok(df) => {
+        Ok((df, number)) => {
             println!("file read ok");
-            let _a = process_file(df);
             stdout()
             .execute(SetForegroundColor(Color::Blue))?
             .execute(SetBackgroundColor(Color::Red))?
