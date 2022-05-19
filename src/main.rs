@@ -1,11 +1,11 @@
-use std::io::{stdout, Write};
+use std::{io::{stdout, Write}, error::Error};
 use clap::{ArgEnum, Parser};
 use crossterm::{
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
     ExecutableCommand, Result,
     event,
 };
-use polars::prelude::*;
+use csv::Reader;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
 enum Mode {
@@ -24,19 +24,15 @@ struct Args {
     mode: Mode,
 }
 
-fn process_file(file: &String) ->  std::result::Result<(LazyFrame, i32), PolarsError> {
-    let df = LazyCsvReader::new(String::from(file))
-    .has_header(true)
-    .finish()?;
-
-    let sample_df = df.clone().fetch(10)?;
-    let dtypes = sample_df.dtypes();
-    let colnames = sample_df.get_column_names();
-
-    println!("{:?}", dtypes);
-    println!("{:?}", colnames);
-
-    Ok((df, 5))
+fn process_file(file: &String) ->  std::result::Result<(i32, i32), Box<dyn Error>> {
+    let mut reader = Reader::from_path(file)?;
+    let headers = reader.headers()?;
+    println!("{:?}", headers);
+    for result in reader.records() {
+        let record = result?;
+        println!("{:?}", record);
+    }
+    Ok((666, 5))
 }
 
 fn main() -> Result<()> {
@@ -50,9 +46,11 @@ fn main() -> Result<()> {
         Ok((df, number)) => {
             println!("file read ok");
             stdout()
-            .execute(SetForegroundColor(Color::Blue))?
+            .execute(SetForegroundColor(Color::Black))?
             .execute(SetBackgroundColor(Color::Red))?
-            .execute(Print("chuj"))?
+            .execute(Print("test\n"))?
+            .execute(SetBackgroundColor(Color::Green))?
+            .execute(Print("test2"))?
             .execute(ResetColor)?;
             Ok(())
         }
