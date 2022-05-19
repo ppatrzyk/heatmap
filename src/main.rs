@@ -34,10 +34,16 @@ fn process_file(file: &String) ->  std::result::Result<(i32, i32), Box<dyn Error
     for result in reader.records() {
         let record = result?;
         println!("{:?}", record);
+        // TODO get index if row-element
         for value in record.iter() {
             match value.parse::<i32>() {
-                Ok(n) => println!("Parsed ok {:?} -> {:?}", value, n), // TODO check maxes here and update, 
-                Err(e) => println!("cannot parse {:?}", value), // TODO maybe try as float?
+                Ok(n) => 
+                    println!("Parsed ok {:?} -> {:?}", value, n), // TODO call separate func for check maxes here and update, 
+                Err(e) => 
+                    match value.parse::<f64>() {
+                        Ok(n) => println!("Parsed ok {:?} -> {:?}", value, n), // TODO call separate func for check maxes here and update, 
+                        Err(e) => println!("cannot parse {:?}", value),
+                    }
             }
         }
     }
