@@ -27,10 +27,19 @@ struct Args {
 fn process_file(file: &String) ->  std::result::Result<(i32, i32), Box<dyn Error>> {
     let mut reader = Reader::from_path(file)?;
     let headers = reader.headers()?;
+    let cols = headers.len();
     println!("{:?}", headers);
+    let mut max_lenghts = (0usize..cols).map(|_x| -1).collect::<Vec<_>>();
+    let mut max_values = max_lenghts.clone();
     for result in reader.records() {
         let record = result?;
         println!("{:?}", record);
+        for value in record.iter() {
+            match value.parse::<i32>() {
+                Ok(n) => println!("Parsed ok {:?} -> {:?}", value, n), // TODO check maxes here and update, 
+                Err(e) => println!("cannot parse {:?}", value), // TODO maybe try as float?
+            }
+        }
     }
     Ok((666, 5))
 }
