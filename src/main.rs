@@ -89,6 +89,16 @@ fn color_scale(val: f64, min_val: f64, max_val: f64) -> Color {
     Color::Rgb { r: color.r, g: color.g, b: color.b }
 }
 
+fn format_cell(val: Value, len: usize, min_val: f64, max_val: f64) -> (String, Color) {
+    // TODO get width of the string right, add whitespace to the right
+    match val {
+        Value::String(val) =>
+            (val, Color::White),
+        Value::Number(val) => 
+            (val.to_string(), color_scale(val, min_val, max_val))
+    }
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
 
@@ -99,11 +109,13 @@ fn main() -> Result<()> {
         }
         Ok(data) => {
             println!("file read ok");
-            let color = color_scale(50.0, -100.0, 300.0);
-            println!("{:?}", color);
-            println!("{:?}", data.max_lengths);
-            println!("{:?}", data.max_values);
-            println!("{:?}", data.min_values);
+            for row in data.rows.iter() {
+                for (i, val) in row.iter().enumerate() {
+                    // TODO resolve and print to stdout
+                    (val_str, color) = format_cell(val, data.max_lengths[i], data.max_values[i], data.min_values[i])
+                }
+                // new line
+            }
             stdout()
             .execute(SetForegroundColor(Color::Black))?
             .execute(SetBackgroundColor(Color::Red))?
