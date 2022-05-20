@@ -29,18 +29,25 @@ enum Value {
     Number(f64),
 }
 
-fn process_file(file: &String) ->  std::result::Result<(Vec<Vec<Value>>, Vec<usize>, Vec<f64>, Vec<f64>), Box<dyn Error>> {
+struct CSVData {
+    rows: Vec<Vec<Value>>,
+    headers: Vec<String>,
+    max_lengths: Vec<usize>,
+    max_values: Vec<f64>,
+    min_values: Vec<f64>,
+}
+
+fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> {
+    // TODO verify equal len on each row?
     let mut reader = Reader::from_path(file)?;
-    let headers = reader.headers()?;
+    let headers = reader.headers()?.into_iter().map(|x| x.to_string()).collect::<Vec<_>>();
     let cols = headers.len();
-    println!("{:?}", headers);
     let mut max_lengths = (0usize..cols).map(|_x| 0).collect::<Vec<_>>();
     let mut max_values = (0usize..cols).map(|_x| f64::NEG_INFINITY).collect::<Vec<_>>();
     let mut min_values = (0usize..cols).map(|_x| f64::INFINITY).collect::<Vec<_>>();
     let mut rows: Vec<Vec<Value>> = Vec::new();
     for result in reader.records() {
         let record = result?;
-        println!("{:?}", record);
         let mut parsed_row: Vec<Value> = Vec::with_capacity(cols);
         for (i, value) in record.iter().enumerate() {
             let entry_len = value.len();
@@ -64,7 +71,14 @@ fn process_file(file: &String) ->  std::result::Result<(Vec<Vec<Value>>, Vec<usi
         }
         rows.push(parsed_row);
     }
-    Ok((rows, max_lengths, max_values, min_values))
+    let data = CSVData {
+        rows: rows,
+        headers: headers,
+        max_lengths: max_lengths,
+        min_values: min_values,
+        max_values: max_values
+    };
+    Ok(data)
 }
 
 fn main() -> Result<()> {
@@ -75,11 +89,11 @@ fn main() -> Result<()> {
             println!("Error reading {}: {}", &args.file, reason);
             Ok(())
         }
-        Ok((rows, max_lengths, max_values, min_values)) => {
+        Ok(data) => {
             println!("file read ok");
-            println!("{:?}", max_lengths);
-            println!("{:?}", max_values);
-            println!("{:?}", min_values);
+            println!("{:?}", data.max_lengths);
+            println!("{:?}", data.max_values);
+            println!("{:?}", data.min_values);
             stdout()
             .execute(SetForegroundColor(Color::Black))?
             .execute(SetBackgroundColor(Color::Red))?
