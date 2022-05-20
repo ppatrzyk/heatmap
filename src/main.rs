@@ -81,6 +81,13 @@ fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> 
     Ok(data)
 }
 
+fn color_scale(val: f64, min_val: f64, max_val: f64) -> colorous::Color {
+    let scale = colorous::YELLOW_ORANGE_RED;
+    let normalized_val = (val-min_val)/max_val;
+    println!("orig {:?}, normalized {:?}", val, normalized_val);
+    scale.eval_continuous(normalized_val)
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
 
@@ -91,6 +98,7 @@ fn main() -> Result<()> {
         }
         Ok(data) => {
             println!("file read ok");
+            color_scale(50.0, -100.0, 300.0);
             println!("{:?}", data.max_lengths);
             println!("{:?}", data.max_values);
             println!("{:?}", data.min_values);

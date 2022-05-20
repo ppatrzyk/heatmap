@@ -83,6 +83,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "colorous"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98804822ee752112e060b40110ae0188eff72b036baf49e61a9f2028eaf33164"
+
+[[package]]
 name = "crossterm"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -140,6 +146,7 @@ name = "heatmap"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "colorous",
  "crossterm",
  "csv",
 ]
