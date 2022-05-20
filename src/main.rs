@@ -29,24 +29,34 @@ fn process_file(file: &String) ->  std::result::Result<(i32, i32), Box<dyn Error
     let headers = reader.headers()?;
     let cols = headers.len();
     println!("{:?}", headers);
-    let mut max_lenghts = (0usize..cols).map(|_x| -1).collect::<Vec<_>>();
-    let mut max_values = max_lenghts.clone();
+    let mut max_lengths = (0usize..cols).map(|_x| 0).collect::<Vec<_>>();
+    let mut max_values = (0usize..cols).map(|_x| f64::NEG_INFINITY).collect::<Vec<_>>();
+    let mut min_values = (0usize..cols).map(|_x| f64::INFINITY).collect::<Vec<_>>();
     for result in reader.records() {
         let record = result?;
         println!("{:?}", record);
-        // TODO get index if row-element
-        for value in record.iter() {
-            match value.parse::<i32>() {
-                Ok(n) => 
-                    println!("Parsed ok {:?} -> {:?}", value, n), // TODO call separate func for check maxes here and update, 
-                Err(e) => 
-                    match value.parse::<f64>() {
-                        Ok(n) => println!("Parsed ok {:?} -> {:?}", value, n), // TODO call separate func for check maxes here and update, 
-                        Err(e) => println!("cannot parse {:?}", value),
-                    }
+        for (i, value) in record.iter().enumerate() {
+            let entry_len = value.len();
+            if entry_len > max_lengths[i] {
+                max_lengths[i] = entry_len;
             }
+            match value.parse::<f64>() {
+                Ok(n) => {
+                    if n > max_values[i] {
+                        max_values[i] = n;
+                    }
+                    if n < min_values[i] {
+                        min_values[i] = n;
+                    }
+                }
+                Err(_e) => ()
+            }
+            // TODO append and track vals
         }
     }
+    println!("{:?}", max_lengths);
+    println!("{:?}", max_values);
+    println!("{:?}", min_values);
     Ok((666, 5))
 }
 
