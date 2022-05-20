@@ -38,7 +38,6 @@ struct CSVData {
 }
 
 fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> {
-    // TODO verify equal len on each row?
     let mut reader = Reader::from_path(file)?;
     let headers = reader.headers()?.into_iter().map(|x| x.to_string()).collect::<Vec<_>>();
     let cols = headers.len();
@@ -69,6 +68,7 @@ fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> 
                 }
             }
         }
+        assert_eq!(parsed_row.len(), cols, "Bad length of row");
         rows.push(parsed_row);
     }
     let data = CSVData {
