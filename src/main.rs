@@ -24,7 +24,12 @@ struct Args {
     mode: Mode,
 }
 
-fn process_file(file: &String) ->  std::result::Result<(i32, i32), Box<dyn Error>> {
+enum Value {
+    String(String),
+    Number(f64),
+}
+
+fn process_file(file: &String) ->  std::result::Result<(Vec<Vec<Value>>, Vec<usize>, Vec<f64>, Vec<f64>), Box<dyn Error>> {
     let mut reader = Reader::from_path(file)?;
     let headers = reader.headers()?;
     let cols = headers.len();
@@ -32,9 +37,11 @@ fn process_file(file: &String) ->  std::result::Result<(i32, i32), Box<dyn Error
     let mut max_lengths = (0usize..cols).map(|_x| 0).collect::<Vec<_>>();
     let mut max_values = (0usize..cols).map(|_x| f64::NEG_INFINITY).collect::<Vec<_>>();
     let mut min_values = (0usize..cols).map(|_x| f64::INFINITY).collect::<Vec<_>>();
+    let mut rows: Vec<Vec<Value>> = Vec::new();
     for result in reader.records() {
         let record = result?;
         println!("{:?}", record);
+        let mut parsed_row: Vec<Value> = Vec::with_capacity(cols);
         for (i, value) in record.iter().enumerate() {
             let entry_len = value.len();
             if entry_len > max_lengths[i] {
@@ -48,16 +55,16 @@ fn process_file(file: &String) ->  std::result::Result<(i32, i32), Box<dyn Error
                     if n < min_values[i] {
                         min_values[i] = n;
                     }
+                    parsed_row.push(Value::Number(n))
                 }
-                Err(_e) => ()
+                Err(_e) => {
+                    parsed_row.push(Value::String(value.to_string()))
+                }
             }
-            // TODO append and track vals
         }
+        rows.push(parsed_row);
     }
-    println!("{:?}", max_lengths);
-    println!("{:?}", max_values);
-    println!("{:?}", min_values);
-    Ok((666, 5))
+    Ok((rows, max_lengths, max_values, min_values))
 }
 
 fn main() -> Result<()> {
@@ -68,8 +75,11 @@ fn main() -> Result<()> {
             println!("Error reading {}: {}", &args.file, reason);
             Ok(())
         }
-        Ok((df, number)) => {
+        Ok((rows, max_lengths, max_values, min_values)) => {
             println!("file read ok");
+            println!("{:?}", max_lengths);
+            println!("{:?}", max_values);
+            println!("{:?}", min_values);
             stdout()
             .execute(SetForegroundColor(Color::Black))?
             .execute(SetBackgroundColor(Color::Red))?
