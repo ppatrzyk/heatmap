@@ -31,7 +31,6 @@ enum Value {
 
 struct CSVData {
     rows: Vec<Vec<Value>>,
-    headers: Vec<String>,
     max_lengths: Vec<usize>,
     max_values: Vec<f64>,
     min_values: Vec<f64>,
@@ -41,10 +40,11 @@ fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> 
     let mut reader = Reader::from_path(file)?;
     let headers = reader.headers()?.into_iter().map(|x| x.to_string()).collect::<Vec<_>>();
     let cols = headers.len();
-    let mut max_lengths = (0usize..cols).map(|_x| 0).collect::<Vec<_>>();
+    let mut max_lengths = headers.iter().map(|x| x.len()).collect::<Vec<_>>();
     let mut max_values = (0usize..cols).map(|_x| f64::NEG_INFINITY).collect::<Vec<_>>();
     let mut min_values = (0usize..cols).map(|_x| f64::INFINITY).collect::<Vec<_>>();
     let mut rows: Vec<Vec<Value>> = Vec::new();
+    rows.push(headers.iter().map(|x| Value::String(x.to_string())).collect::<Vec<_>>());
     for result in reader.records() {
         let record = result?;
         let mut parsed_row: Vec<Value> = Vec::with_capacity(cols);
@@ -73,7 +73,6 @@ fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> 
     }
     let data = CSVData {
         rows: rows,
-        headers: headers,
         max_lengths: max_lengths,
         min_values: min_values,
         max_values: max_values
