@@ -92,8 +92,10 @@ fn color_scale(val: f64, min_val: f64, max_val: f64) -> Color {
 fn fixed_width(val: String, len: usize) -> String {
     let str_len = val.len();
     let whitespace = (0..(len-str_len)).map(|_| " ").collect::<String>();
-    let mut formatted_str = val.to_owned();
+    let mut formatted_str = " ".to_string();
+    formatted_str.push_str(&val);
     formatted_str.push_str(&whitespace);
+    formatted_str.push_str(" ");
     formatted_str
 }
 
@@ -117,12 +119,14 @@ fn main() -> Result<()> {
         Ok(data) => {
             // TODO print header, stored as Value, should be added to rows or separate?
             for row in data.rows.iter() {
+                stdout().execute(Print("|"))?;
                 for (i, val) in row.iter().enumerate() {
                     let (val_str, color) = format_cell(val, data.max_lengths[i], data.min_values[i], data.max_values[i]);
                     stdout()
                     .execute(SetBackgroundColor(color))?
                     .execute(Print(val_str))?
-                    .execute(ResetColor)?;
+                    .execute(ResetColor)?
+                    .execute(Print("|"))?;
                 }
                 stdout().execute(Print("\n"))?;
             }
