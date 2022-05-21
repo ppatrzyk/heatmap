@@ -1,9 +1,8 @@
-use std::{io::{stdout, Write}, error::Error};
+use std::{io::{stdout}, error::Error};
 use clap::{ArgEnum, Parser};
 use crossterm::{
-    style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+    style::{Color, Print, ResetColor, SetBackgroundColor},
     ExecutableCommand, Result,
-    event,
 };
 use csv::Reader;
 
@@ -116,7 +115,6 @@ fn main() -> Result<()> {
             Ok(())
         }
         Ok(data) => {
-            // TODO print header, stored as Value, should be added to rows or separate?
             for row in data.rows.iter() {
                 stdout().execute(Print("|"))?;
                 for (i, val) in row.iter().enumerate() {
