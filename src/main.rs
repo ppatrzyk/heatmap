@@ -83,19 +83,19 @@ fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> 
 
 fn color_scale(val: f64, min_val: f64, max_val: f64) -> Color {
     let scale = colorous::YELLOW_ORANGE_RED;
-    let normalized_val = (val-min_val)/max_val;
-    println!("orig {:?}, normalized {:?}", val, normalized_val);
+    let normalized_val = (val-min_val)/(max_val-min_val);
+    // println!("orig {:?}, min {:?} max {:?} normalized {:?}", val, min_val, max_val, normalized_val);
     let color = scale.eval_continuous(normalized_val);
     Color::Rgb { r: color.r, g: color.g, b: color.b }
 }
 
-fn format_cell(val: Value, len: usize, min_val: f64, max_val: f64) -> (String, Color) {
+fn format_cell(val: &Value, len: usize, min_val: f64, max_val: f64) -> (String, Color) {
     // TODO get width of the string right, add whitespace to the right
     match val {
         Value::String(val) =>
-            (val, Color::White),
+            (val.to_string(), Color::White),
         Value::Number(val) => 
-            (val.to_string(), color_scale(val, min_val, max_val))
+            (val.to_string(), color_scale(*val, min_val, max_val))
     }
 }
 
@@ -111,18 +111,16 @@ fn main() -> Result<()> {
             println!("file read ok");
             for row in data.rows.iter() {
                 for (i, val) in row.iter().enumerate() {
-                    // TODO resolve and print to stdout
-                    (val_str, color) = format_cell(val, data.max_lengths[i], data.max_values[i], data.min_values[i])
+                    let (val_str, color) = format_cell(val, data.max_lengths[i], data.min_values[i], data.max_values[i]);
+                    // println!("cell {:?}, index {:?} \n", val_str, i);
+                    stdout()
+                    .execute(SetForegroundColor(Color::Black))?
+                    .execute(SetBackgroundColor(color))?
+                    .execute(Print(val_str))?
+                    .execute(ResetColor)?;
                 }
-                // new line
+                stdout().execute(Print("\n"))?;
             }
-            stdout()
-            .execute(SetForegroundColor(Color::Black))?
-            .execute(SetBackgroundColor(Color::Red))?
-            .execute(Print("test\n"))?
-            .execute(SetBackgroundColor(Color::Green))?
-            .execute(Print("test2"))?
-            .execute(ResetColor)?;
             Ok(())
         }
     }
