@@ -6,6 +6,11 @@ use crossterm::{
 };
 use csv::Reader;
 
+// TODO
+// accept stdin
+// https://stackoverflow.com/questions/55148856/how-do-i-use-stdin-if-no-positional-arguments-are-given-with-clap
+// header / no header option
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
