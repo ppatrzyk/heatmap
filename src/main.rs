@@ -1,26 +1,16 @@
 use std::{io::{stdout}, error::Error};
-use clap::{ArgEnum, Parser};
+use clap::{Parser};
 use crossterm::{
     style::{Color, Print, ResetColor, SetBackgroundColor},
     ExecutableCommand, Result,
 };
 use csv::Reader;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
-enum Mode {
-    Row,
-    Col,
-    Full,
-}
-
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
     #[clap()]
     file: String,
-
-    #[clap(short, long, arg_enum, default_value = "col")]
-    mode: Mode,
 }
 
 enum Value {
