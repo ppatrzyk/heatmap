@@ -82,20 +82,27 @@ fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> 
 }
 
 fn color_scale(val: f64, min_val: f64, max_val: f64) -> Color {
+    // TODO guard against min==max
     let scale = colorous::YELLOW_ORANGE_RED;
     let normalized_val = (val-min_val)/(max_val-min_val);
-    // println!("orig {:?}, min {:?} max {:?} normalized {:?}", val, min_val, max_val, normalized_val);
     let color = scale.eval_continuous(normalized_val);
     Color::Rgb { r: color.r, g: color.g, b: color.b }
 }
 
+fn fixed_width(val: String, len: usize) -> String {
+    let str_len = val.len();
+    let whitespace = (0..(len-str_len)).map(|_| " ").collect::<String>();
+    let mut formatted_str = val.to_owned();
+    formatted_str.push_str(&whitespace);
+    formatted_str
+}
+
 fn format_cell(val: &Value, len: usize, min_val: f64, max_val: f64) -> (String, Color) {
-    // TODO get width of the string right, add whitespace to the right
     match val {
         Value::String(val) =>
-            (val.to_string(), Color::White),
+            (fixed_width(val.to_string(), len), Color::Reset),
         Value::Number(val) => 
-            (val.to_string(), color_scale(*val, min_val, max_val))
+            (fixed_width(val.to_string(), len), color_scale(*val, min_val, max_val))
     }
 }
 
@@ -108,13 +115,11 @@ fn main() -> Result<()> {
             Ok(())
         }
         Ok(data) => {
-            println!("file read ok");
+            // TODO print header, stored as Value, should be added to rows or separate?
             for row in data.rows.iter() {
                 for (i, val) in row.iter().enumerate() {
                     let (val_str, color) = format_cell(val, data.max_lengths[i], data.min_values[i], data.max_values[i]);
-                    // println!("cell {:?}, index {:?} \n", val_str, i);
                     stdout()
-                    .execute(SetForegroundColor(Color::Black))?
                     .execute(SetBackgroundColor(color))?
                     .execute(Print(val_str))?
                     .execute(ResetColor)?;
