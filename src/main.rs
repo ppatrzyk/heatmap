@@ -4,12 +4,7 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetBackgroundColor},
     ExecutableCommand, Result,
 };
-use csv::Reader;
-
-// TODO
-// accept stdin
-// https://stackoverflow.com/questions/55148856/how-do-i-use-stdin-if-no-positional-arguments-are-given-with-clap
-// header / no header option
+use csv::ReaderBuilder;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -31,14 +26,15 @@ struct CSVData {
 }
 
 fn process_file(file: &String) ->  std::result::Result<CSVData, Box<dyn Error>> {
-    let mut reader = Reader::from_path(file)?;
+    let mut reader = ReaderBuilder::new()
+        .has_headers(false)
+        .from_path(file)?;
     let headers = reader.headers()?.into_iter().map(|x| x.to_string()).collect::<Vec<_>>();
     let cols = headers.len();
     let mut max_lengths = headers.iter().map(|x| x.len()).collect::<Vec<_>>();
     let mut max_values = (0usize..cols).map(|_x| f64::NEG_INFINITY).collect::<Vec<_>>();
     let mut min_values = (0usize..cols).map(|_x| f64::INFINITY).collect::<Vec<_>>();
     let mut rows: Vec<Vec<Value>> = Vec::new();
-    rows.push(headers.iter().map(|x| Value::String(x.to_string())).collect::<Vec<_>>());
     for result in reader.records() {
         let record = result?;
         let mut parsed_row: Vec<Value> = Vec::with_capacity(cols);
