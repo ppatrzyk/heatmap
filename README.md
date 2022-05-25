@@ -1,15 +1,16 @@
 # heatmap
 
-## DEV
+Simple command line utility to display CSV file as a heatmap.
+
+## Usage
 
 ```
-cargo build
-target/debug/heatmap
+# Build
+cargo build -r
+
+# Get data and print
+curl https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv | tail -150 > iris.csv
+target/release/heatmap iris.csv
 ```
 
-## Example
-
-```
-curl -s http://api.nbp.pl/api/exchangerates/rates/a/eur/last/10/?format=json \
-| jq -r '.rates | map([.no, .effectiveDate, .mid] | join(", ")) | join("\n")'
-```
+![demo](demo.gif)
